@@ -189,7 +189,7 @@ func (self *_parser) parseVariableDeclarationList(var_ file.Idx) []ast.Expressio
 	return list
 }
 
-func (self *_parser) parseObjectPropertyKey() (string, ast.Expression) {
+func (self *_parser) parseObjectPropertyKey() (literal string, tkn token.Token,exp ast.Expression) {
 	idx, tkn, literal, parsedLiteral := self.idx, self.token, self.literal, self.parsedLiteral
 	var value ast.Expression
 	self.next()
@@ -217,7 +217,11 @@ func (self *_parser) parseObjectPropertyKey() (string, ast.Expression) {
 			Literal: literal,
 			Value:   parsedLiteral,
 		}
+	case token.Ellipsis:
+		// TODO 解构
+
 	default:
+		println("parseObjectPropertyKey: "+tkn.String())
 		// null, false, class, etc.
 		if isId(tkn) {
 			value = &ast.StringLiteral{
@@ -227,15 +231,17 @@ func (self *_parser) parseObjectPropertyKey() (string, ast.Expression) {
 			}
 		}
 	}
-	return literal, value
+	return literal, tkn, value
 }
 
 func (self *_parser) parseObjectProperty() ast.Property {
 
-	literal, value := self.parseObjectPropertyKey()
+	// {a: 1}
+	// parse the a
+	literal, tkn, value := self.parseObjectPropertyKey()
 	if literal == "get" && self.token != token.COLON {
 		idx := self.idx
-		_, value := self.parseObjectPropertyKey()
+		_,_, value := self.parseObjectPropertyKey()
 		parameterList := self.parseFunctionParameterList()
 
 		node := &ast.FunctionLiteral{
@@ -243,14 +249,16 @@ func (self *_parser) parseObjectProperty() ast.Property {
 			ParameterList: parameterList,
 		}
 		self.parseFunctionBlock(node)
-		return ast.Property{
+		return &ast.ObjectProperty{
 			Key:   value,
 			Kind:  "get",
 			Value: node,
 		}
 	} else if literal == "set" && self.token != token.COLON {
 		idx := self.idx
-		_, value := self.parseObjectPropertyKey()
+		// {get x(){return 1}}
+		// parse x
+		_,_, value := self.parseObjectPropertyKey()
 		parameterList := self.parseFunctionParameterList()
 
 		node := &ast.FunctionLiteral{
@@ -258,16 +266,20 @@ func (self *_parser) parseObjectProperty() ast.Property {
 			ParameterList: parameterList,
 		}
 		self.parseFunctionBlock(node)
-		return ast.Property{
+		return &ast.ObjectProperty{
 			Key:   value,
 			Kind:  "set",
 			Value: node,
 		}
+	}else if tkn==token.Ellipsis{
+		return &ast.SpreadProperty{Argument: self.parseAssignmentExpression()}
 	}
+
+	println("self.token: " + self.token.String())
 
 	self.expect(token.COLON)
 
-	return ast.Property{
+	return &ast.ObjectProperty{
 		Key:   value,
 		Kind:  "value",
 		Value: self.parseAssignmentExpression(),

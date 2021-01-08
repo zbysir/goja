@@ -133,10 +133,18 @@ type (
 		Closing file.Idx
 	}
 
-	Property struct {
+	ObjectProperty struct {
 		Key   Expression
 		Kind  string
 		Value Expression
+	}
+
+	SpreadProperty struct {
+		Argument Expression
+	}
+
+	Property interface {
+		_propertyNode()
 	}
 
 	RegExpLiteral struct {
@@ -178,6 +186,9 @@ type (
 		Idx            file.Idx
 	}
 )
+
+func (*SpreadProperty) _propertyNode() {}
+func (*ObjectProperty) _propertyNode() {}
 
 // _expressionNode
 

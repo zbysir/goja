@@ -288,7 +288,19 @@ func (self *_parser) scan() (tkn token.Token, literal string, parsedLiteral unis
 					insertSemicolon = true
 					tkn, literal = self.scanNumericLiteral(true)
 				} else {
-					tkn = token.PERIOD
+					if self.chr == '.' {
+						self.read()
+						if self.chr == '.' {
+							self.read()
+							tkn = token.Ellipsis
+
+							//print("xxxxx")
+						} else {
+							tkn = token.PERIOD
+						}
+					} else {
+						tkn = token.PERIOD
+					}
 				}
 			case ',':
 				tkn = token.COMMA

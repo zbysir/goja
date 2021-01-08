@@ -1090,6 +1090,20 @@ func (p setProp1) exec(vm *vm) {
 	vm.pc++
 }
 
+type spreadProp struct{}
+
+func (p spreadProp) exec(vm *vm) {
+	obj:=vm.r.toObject(vm.stack[vm.sp-2])
+	obj2 := vm.r.toObject(vm.stack[vm.sp-1])
+	for _, key := range obj2.Keys() {
+		obj.self._putProp(unistring.String(key), obj2.Get(key), true, true, true)
+	}
+	//vm.r.toObject(vm.stack[vm.sp-2]).self._putProp(unistring.String(p), vm.stack[vm.sp-1], true, true, true)
+
+	vm.sp--
+	vm.pc++
+}
+
 type _setProto struct{}
 
 var setProto _setProto
