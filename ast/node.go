@@ -121,6 +121,12 @@ type (
 		Value   interface{}
 	}
 
+	SpreadElement struct {
+		LeftBrace  file.Idx
+		RightBrace file.Idx
+		Argument   Expression
+	}
+
 	ObjectLiteral struct {
 		LeftBrace  file.Idx
 		RightBrace file.Idx
@@ -207,6 +213,7 @@ func (*NewExpression) _expressionNode()         {}
 func (*NullLiteral) _expressionNode()           {}
 func (*NumberLiteral) _expressionNode()         {}
 func (*ObjectLiteral) _expressionNode()         {}
+func (*SpreadElement) _expressionNode()         {}
 func (*RegExpLiteral) _expressionNode()         {}
 func (*SequenceExpression) _expressionNode()    {}
 func (*StringLiteral) _expressionNode()         {}
@@ -430,6 +437,7 @@ func (self *NewExpression) Idx0() file.Idx         { return self.New }
 func (self *NullLiteral) Idx0() file.Idx           { return self.Idx }
 func (self *NumberLiteral) Idx0() file.Idx         { return self.Idx }
 func (self *ObjectLiteral) Idx0() file.Idx         { return self.LeftBrace }
+func (self *SpreadElement) Idx0() file.Idx         { return self.LeftBrace }
 func (self *RegExpLiteral) Idx0() file.Idx         { return self.Idx }
 func (self *SequenceExpression) Idx0() file.Idx    { return self.Sequence[0].Idx0() }
 func (self *StringLiteral) Idx0() file.Idx         { return self.Idx }
@@ -480,6 +488,7 @@ func (self *NewExpression) Idx1() file.Idx         { return self.RightParenthesi
 func (self *NullLiteral) Idx1() file.Idx           { return file.Idx(int(self.Idx) + 4) } // "null"
 func (self *NumberLiteral) Idx1() file.Idx         { return file.Idx(int(self.Idx) + len(self.Literal)) }
 func (self *ObjectLiteral) Idx1() file.Idx         { return self.RightBrace }
+func (self *SpreadElement) Idx1() file.Idx         { return self.RightBrace }
 func (self *RegExpLiteral) Idx1() file.Idx         { return file.Idx(int(self.Idx) + len(self.Literal)) }
 func (self *SequenceExpression) Idx1() file.Idx    { return self.Sequence[0].Idx1() }
 func (self *StringLiteral) Idx1() file.Idx         { return file.Idx(int(self.Idx) + len(self.Literal)) }

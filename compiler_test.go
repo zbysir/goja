@@ -2163,6 +2163,24 @@ func TestObjectLiteralWithNumericKeys(t *testing.T) {
 	testScript1(SCRIPT, valueTrue, t)
 }
 
+func TestObjectSpread(t *testing.T) {
+	const SCRIPT = `
+	var o = {a: 1, ...{c: 2}, c:3};
+	var o2 = {a: 1, ...{c: 2, ...{e: 3}}};
+	o.c ==3 && o.a==1 &&
+    o2.c==2 && o2.e==3
+	`
+	testScript1(SCRIPT, valueTrue, t)
+}
+
+func TestArraySpread(t *testing.T) {
+	const SCRIPT = `
+	var o = [1,2,3 , ...[4,5]];
+	o[0] == 1 && o[4] == 5
+	`
+	testScript1(SCRIPT, valueTrue, t)
+}
+
 func BenchmarkCompile(b *testing.B) {
 	f, err := os.Open("testdata/S15.10.2.12_A1_T1.js")
 

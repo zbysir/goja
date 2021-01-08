@@ -189,7 +189,7 @@ func (self *_parser) parseVariableDeclarationList(var_ file.Idx) []ast.Expressio
 	return list
 }
 
-func (self *_parser) parseObjectPropertyKey() (literal string, tkn token.Token,exp ast.Expression) {
+func (self *_parser) parseObjectPropertyKey() (literal string, tkn token.Token, exp ast.Expression) {
 	idx, tkn, literal, parsedLiteral := self.idx, self.token, self.literal, self.parsedLiteral
 	var value ast.Expression
 	self.next()
@@ -218,10 +218,8 @@ func (self *_parser) parseObjectPropertyKey() (literal string, tkn token.Token,e
 			Value:   parsedLiteral,
 		}
 	case token.Ellipsis:
-		// TODO 解构
-
+		// do nothing
 	default:
-		println("parseObjectPropertyKey: "+tkn.String())
 		// null, false, class, etc.
 		if isId(tkn) {
 			value = &ast.StringLiteral{
@@ -235,13 +233,12 @@ func (self *_parser) parseObjectPropertyKey() (literal string, tkn token.Token,e
 }
 
 func (self *_parser) parseObjectProperty() ast.Property {
-
 	// {a: 1}
 	// parse the a
 	literal, tkn, value := self.parseObjectPropertyKey()
 	if literal == "get" && self.token != token.COLON {
 		idx := self.idx
-		_,_, value := self.parseObjectPropertyKey()
+		_, _, value := self.parseObjectPropertyKey()
 		parameterList := self.parseFunctionParameterList()
 
 		node := &ast.FunctionLiteral{
@@ -258,7 +255,7 @@ func (self *_parser) parseObjectProperty() ast.Property {
 		idx := self.idx
 		// {get x(){return 1}}
 		// parse x
-		_,_, value := self.parseObjectPropertyKey()
+		_, _, value := self.parseObjectPropertyKey()
 		parameterList := self.parseFunctionParameterList()
 
 		node := &ast.FunctionLiteral{
@@ -271,11 +268,9 @@ func (self *_parser) parseObjectProperty() ast.Property {
 			Kind:  "set",
 			Value: node,
 		}
-	}else if tkn==token.Ellipsis{
+	} else if tkn == token.Ellipsis {
 		return &ast.SpreadProperty{Argument: self.parseAssignmentExpression()}
 	}
-
-	println("self.token: " + self.token.String())
 
 	self.expect(token.COLON)
 
@@ -317,7 +312,17 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 			value = append(value, nil)
 			continue
 		}
-		value = append(value, self.parseAssignmentExpression())
+		if self.token == token.Ellipsis {
+			start := self.expect(token.Ellipsis)
+			arg := self.parseAssignmentExpression()
+			value = append(value, &ast.SpreadElement{
+				LeftBrace:  start,
+				RightBrace: self.idx,
+				Argument:   arg,
+			})
+		} else {
+			value = append(value, self.parseAssignmentExpression())
+		}
 		if self.token != token.RIGHT_BRACKET {
 			self.expect(token.COMMA)
 		}

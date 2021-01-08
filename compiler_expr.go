@@ -107,6 +107,13 @@ type compiledBracketExpr struct {
 	left, member compiledExpr
 }
 
+type compiledSpreadElementExpr struct {
+	baseCompiledExpr
+	argument compiledExpr
+}
+func (e *compiledSpreadElementExpr) emitGetter(putOnStack bool) {
+
+}
 type compiledThisExpr struct {
 	baseCompiledExpr
 }
@@ -240,6 +247,10 @@ func (c *compiler) compileExpression(v ast.Expression) compiledExpr {
 		return c.compileNewExpression(v)
 	case *ast.MetaProperty:
 		return c.compileMetaProperty(v)
+	case *ast.SpreadElement:
+		r:=&compiledSpreadElementExpr{argument: c.compileExpression(v.Argument)}
+		r.init(c, v.LeftBrace)
+		return r
 	default:
 		panic(fmt.Errorf("Unknown expression type: %T", v))
 	}
