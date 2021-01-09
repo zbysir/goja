@@ -1261,6 +1261,8 @@ func (l newArray) exec(vm *vm) {
 	if l > 0 {
 		copy(values, vm.stack[vm.sp-int(l):vm.sp])
 	}
+	// 将 *compiledArrayLiteral.emitGetter() 代码中emit的多个值从栈中取得, 并生成一个数组, 重新存放在arrayValue中
+	//
 	obj := vm.r.newArrayValues(values)
 	if l > 0 {
 		vm.sp -= int(l) - 1

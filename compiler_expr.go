@@ -109,11 +109,15 @@ type compiledBracketExpr struct {
 
 type compiledSpreadElementExpr struct {
 	baseCompiledExpr
-	argument compiledExpr
+	argument *ast.ArrayLiteral
 }
-func (e *compiledSpreadElementExpr) emitGetter(putOnStack bool) {
 
+func (e *compiledSpreadElementExpr) emitGetter(putOnStack bool) {
+	for _, i := range e.argument.Value {
+		e.c.compileExpression(i).emitGetter(true)
+	}
 }
+
 type compiledThisExpr struct {
 	baseCompiledExpr
 }
@@ -248,7 +252,7 @@ func (c *compiler) compileExpression(v ast.Expression) compiledExpr {
 	case *ast.MetaProperty:
 		return c.compileMetaProperty(v)
 	case *ast.SpreadElement:
-		r:=&compiledSpreadElementExpr{argument: c.compileExpression(v.Argument)}
+		r := &compiledSpreadElementExpr{argument: v.Argument}
 		r.init(c, v.LeftBrace)
 		return r
 	default:
@@ -1435,19 +1439,28 @@ func (c *compiler) compileObjectLiteral(v *ast.ObjectLiteral) compiledExpr {
 func (e *compiledArrayLiteral) emitGetter(putOnStack bool) {
 	e.addSrcMap()
 	objCount := 0
+	arrLen := 0
 	for _, v := range e.expr.Value {
-		if v != nil {
+		arrLen++
+		switch v:=v.(type) {
+		case *ast.SpreadElement:
+			arrLen+= len(v.Argument.Value)
+			for _, i := range v.Argument.Value {
+				e.c.compileExpression(i).emitGetter(true)
+			}
+
+		case nil:
+			e.c.emit(loadNil)
+		default:
 			e.c.compileExpression(v).emitGetter(true)
 			objCount++
-		} else {
-			e.c.emit(loadNil)
 		}
 	}
-	if objCount == len(e.expr.Value) {
+	if objCount == arrLen {
 		e.c.emit(newArray(objCount))
 	} else {
 		e.c.emit(&newArraySparse{
-			l:        len(e.expr.Value),
+			l:        arrLen,
 			objCount: objCount,
 		})
 	}

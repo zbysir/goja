@@ -269,7 +269,7 @@ func (self *_parser) parseObjectProperty() ast.Property {
 			Value: node,
 		}
 	} else if tkn == token.Ellipsis {
-		return &ast.SpreadProperty{Argument: self.parseAssignmentExpression()}
+		return &ast.SpreadElement{Argument: self.parseAssignmentExpression()}
 	}
 
 	self.expect(token.COLON)

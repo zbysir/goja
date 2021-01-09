@@ -145,10 +145,6 @@ type (
 		Value Expression
 	}
 
-	SpreadProperty struct {
-		Argument Expression
-	}
-
 	Property interface {
 		_propertyNode()
 	}
@@ -193,7 +189,7 @@ type (
 	}
 )
 
-func (*SpreadProperty) _propertyNode() {}
+func (*SpreadElement) _propertyNode()  {}
 func (*ObjectProperty) _propertyNode() {}
 
 // _expressionNode
