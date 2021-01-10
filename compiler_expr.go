@@ -253,7 +253,7 @@ func (c *compiler) compileExpression(v ast.Expression) compiledExpr {
 		return c.compileMetaProperty(v)
 	case *ast.SpreadElement:
 		r := &compiledSpreadElementExpr{argument: v.Argument}
-		r.init(c, v.LeftBrace)
+		r.init(c, v.Start)
 		return r
 	default:
 		panic(fmt.Errorf("Unknown expression type: %T", v))
@@ -1416,7 +1416,7 @@ func (e *compiledObjectLiteral) emitGetter(putOnStack bool) {
 			default:
 				panic(fmt.Errorf("Unknown property kind: %s", prop.Kind))
 			}
-		case *ast.SpreadProperty:
+		case *ast.SpreadElement:
 			e.c.compileExpression(prop.Argument).emitGetter(true)
 			e.c.emit(spreadProp{})
 

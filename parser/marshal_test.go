@@ -872,6 +872,91 @@ func TestParserAST(t *testing.T) {
 ]
             `)
 
+		// spread
+
+		// spread object
+		test(`
+({...{b:1}})
+        ---
+[
+            {
+              "Object": [
+                {
+                  "SpreadElement": {
+                    "Argument": {
+                      "Object": [
+                        {
+                          "Key": {
+                            "Idx": 7,
+                            "Literal": "b",
+                            "Value": "b"
+                          },
+                          "Value": {
+                            "Literal": 1
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+            `)
+
+		// spread array
+		test(`
+[1, ...[1]]
+        ---
+[
+            {
+              "Array": [
+                {
+                  "Literal": 1
+                },
+                {
+                  "SpreadElement": {
+                    "Argument": {
+                      "Array": [
+                        {
+                          "Literal": 1
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+            `)
+
+		// spread func call
+		test(`
+func(1,...a)
+        ---
+[
+            {
+              "Call": {
+                "ArgumentList": [
+                  {
+                    "Literal": 1
+                  },
+                  {
+                    "SpreadElement": {
+                      "Argument": {
+                        "Identifier": "a"
+                      }
+                    }
+                  }
+                ],
+                "Callee": {
+                  "Identifier": "func"
+                }
+              }
+            }
+          ]
+            `)
+
 		return
 
 		test(`
@@ -945,65 +1030,4 @@ func TestParserAST(t *testing.T) {
 ]
         `)
 	})
-}
-
-func TestSpreadObj(t *testing.T) {
-	_, program, err := testParse("var a = {...{b:1}}")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	t.Logf("%s", value)
-}
-
-
-func TestSpreadArray(t *testing.T) {
-	_, program, err := testParse("var a = [1, ...[1]]")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	t.Logf("%s", value)
-}
-
-func TestSpreadFunCall(t *testing.T) {
-	_, program, err := testParse("func(1,...a)")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-
-
-	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	t.Logf("%s", value)
-}
-
-func TestFunCall(t *testing.T) {
-	_, program, err := testParse("func(1, a)")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-
-
-	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	t.Logf("%s", value)
 }
