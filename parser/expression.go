@@ -94,8 +94,17 @@ func (self *_parser) parsePrimaryExpression() ast.Expression {
 		}
 	case token.FUNCTION:
 		return self.parseFunction(false)
+	case token.Ellipsis:
+		self.next()
+		// todo write a function
+		return &ast.SpreadElement{
+			LeftBrace:  0,
+			RightBrace: 0,
+			Argument:   self.parseAssignmentExpression(),
+		}
 	}
 
+	println("errorUnexpectedToken"+ self.token.String())
 	self.errorUnexpectedToken(self.token)
 	self.nextStatement()
 	return &ast.BadExpression{From: idx, To: self.idx}
@@ -340,13 +349,23 @@ func (self *_parser) parseArgumentList() (argumentList []ast.Expression, idx0, i
 	idx0 = self.expect(token.LEFT_PARENTHESIS)
 	if self.token != token.RIGHT_PARENTHESIS {
 		for {
+			println("toekn "+ self.token.String())
 			argumentList = append(argumentList, self.parseAssignmentExpression())
-			if self.token != token.COMMA {
+
+			println("toekn after "+ self.token.String())
+			if self.token==token.Ellipsis{
+				argumentList = append(argumentList, &ast.SpreadElement{
+					LeftBrace:  0,
+					RightBrace: 0,
+					Argument:    self.parseAssignmentExpression(),
+				})
+			}else if self.token != token.COMMA {
 				break
 			}
 			self.next()
 		}
 	}
+	println("xxx")
 	idx1 = self.expect(token.RIGHT_PARENTHESIS)
 	return
 }
@@ -767,6 +786,7 @@ func (self *_parser) parseConditionlExpression() ast.Expression {
 
 func (self *_parser) parseAssignmentExpression() ast.Expression {
 	left := self.parseConditionlExpression()
+	println("self.parseConditionlExpression "+self.token.String())
 	var operator token.Token
 	switch self.token {
 	case token.ASSIGN:

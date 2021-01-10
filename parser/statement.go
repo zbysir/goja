@@ -147,6 +147,7 @@ func (self *_parser) parseTryStatement() ast.Statement {
 	return node
 }
 
+//
 func (self *_parser) parseFunctionParameterList() *ast.ParameterList {
 	opening := self.expect(token.LEFT_PARENTHESIS)
 	var list []*ast.Identifier

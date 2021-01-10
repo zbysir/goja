@@ -143,7 +143,11 @@ func testMarshalNode(node interface{}) interface{} {
 			"Name", node.Label.Name,
 			"Statement", testMarshalNode(node.Statement),
 		)
-	case ast.Property:
+	case *ast.SpreadElement:
+		return marshal("SpreadElement",
+			"Argument", testMarshalNode(node.Argument),
+		)
+	case *ast.ObjectProperty:
 		return marshal("",
 			"Key", node.Key,
 			"Value", testMarshalNode(node.Value),
@@ -941,4 +945,65 @@ func TestParserAST(t *testing.T) {
 ]
         `)
 	})
+}
+
+func TestSpreadObj(t *testing.T) {
+	_, program, err := testParse("var a = {...{b:1}}")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	t.Logf("%s", value)
+}
+
+
+func TestSpreadArray(t *testing.T) {
+	_, program, err := testParse("var a = [1, ...[1]]")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	t.Logf("%s", value)
+}
+
+func TestSpreadFunCall(t *testing.T) {
+	_, program, err := testParse("func(1,...a)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+
+
+	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	t.Logf("%s", value)
+}
+
+func TestFunCall(t *testing.T) {
+	_, program, err := testParse("func(1, a)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+
+
+	value, err := json.MarshalIndent(testMarshalNode(program), "  ", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	t.Logf("%s", value)
 }
